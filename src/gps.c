@@ -334,9 +334,9 @@ void gps_parse(char* line)
 {
     if (strstr(line, "GGA") == line+3) 
     {
-        char* pch = strtok(line, ",");
+        char* pch = strsep(&line, ",");
 
-        pch = strtok(NULL, ","); // Time
+        pch = strsep(&line, ","); // Time
 
         // GPSDO screen is updated once every second, when receiving the PPS signal
         // BUT, the GGA frame is received a fraction of second AFTER the PPS pulse
@@ -394,18 +394,18 @@ void gps_parse(char* line)
         // Terminaute time string
         gps_time[8] = '\0';
 
-        pch = strtok(NULL, ","); // Latitude
+        pch = strsep(&line, ","); // Latitude
         gps_latitude_double = gps_parse_coordinate(pch,gps_latitude,sizeof(gps_latitude));
-        pch = strtok(NULL, ","); // N/S
+        pch = strsep(&line, ","); // N/S
         if(strlen(pch)<sizeof(gps_n_s))
         {
             strcpy(gps_n_s,pch);
             if(gps_n_s[0] == 'S')
                 gps_latitude_double*=-1;
         }
-        pch = strtok(NULL, ","); // Longitude
+        pch = strsep(&line, ","); // Longitude
         gps_longitude_double = gps_parse_coordinate(pch,gps_longitude,sizeof(gps_longitude));
-        pch = strtok(NULL, ","); // E/W
+        pch = strsep(&line, ","); // E/W
         if(strlen(pch)<sizeof(gps_e_w))
         {
             strcpy(gps_e_w,pch);
@@ -413,36 +413,36 @@ void gps_parse(char* line)
                 gps_longitude_double*=-1;
         }
         gps_compute_locator(gps_latitude_double,gps_longitude_double);
-        strtok(NULL, ","); // Fix
+        strsep(&line, ","); // Fix
 
-        num_sats = atoi(strtok(NULL, ",")); // Num sats used
+        num_sats = atoi(strsep(&line, ",")); // Num sats used
 
-        pch = strtok(NULL, ","); // HDOP
+        pch = strsep(&line, ","); // HDOP
         if(strlen(pch)<sizeof(gps_hdop))
         {
             strcpy(gps_hdop,pch);
         }
         
-        gps_msl_altitude = atof(strtok(NULL, ",")); // MSL Elevation
-        strtok(NULL, ","); // Unit
-        gps_geoid_separation = atof(strtok(NULL, ",")); // Geoid Separation
-        // strtok(NULL, ","); // Unit
+        gps_msl_altitude = atof(strsep(&line, ",")); // MSL Elevation
+        strsep(&line, ","); // Unit
+        gps_geoid_separation = atof(strsep(&line, ",")); // Geoid Separation
+        // strsep(&line, ","); // Unit
 
         gga_frames++;
     } 
     else if (strstr(line, "RMC") == line+3) 
     {
-        char* pch = strtok(line, ",");
+        char* pch = strsep(&line, ",");
 
-        pch = strtok(NULL, ","); // Time
-        pch = strtok(NULL, ","); // Alert
-        pch = strtok(NULL, ","); // Latitude
-        pch = strtok(NULL, ","); // N/S
-        pch = strtok(NULL, ","); // Longitude
-        pch = strtok(NULL, ","); // E/W
-        pch = strtok(NULL, ","); // Speed
-        pch = strtok(NULL, ","); // Orientation
-        pch = strtok(NULL, ","); // Date
+        pch = strsep(&line, ","); // Time
+        pch = strsep(&line, ","); // Alert
+        pch = strsep(&line, ","); // Latitude
+        pch = strsep(&line, ","); // N/S
+        pch = strsep(&line, ","); // Longitude
+        pch = strsep(&line, ","); // E/W
+        pch = strsep(&line, ","); // Speed
+        pch = strsep(&line, ","); // Orientation
+        pch = strsep(&line, ","); // Date
 
         if(strlen(pch)>=6)
         {   // Ignore empty dates

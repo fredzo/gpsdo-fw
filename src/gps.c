@@ -4,6 +4,7 @@
 #include "stm32f1xx_hal_uart.h"
 #include "usart.h"
 #include "eeprom.h"
+#include "mcu_time.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -393,6 +394,30 @@ void gps_parse(char* line)
         gps_time[5] = ':';
         // Terminaute time string
         gps_time[8] = '\0';
+
+        // Sync MCU time with compensated/timezone-adjusted GPS time
+        {
+            char mcu_sync_time[sizeof(gps_time)];
+            memcpy(mcu_sync_time, gps_time, sizeof(gps_time));
+            // Remove the +1s PPS compensation before syncing MCU time
+            // to avoid double-counting with TIM2 ISR increment
+            {
+                int hour = (mcu_sync_time[0]-'0') * 10 + (mcu_sync_time[1]-'0');
+                int min  = (mcu_sync_time[3]-'0') * 10 + (mcu_sync_time[4]-'0');
+                int sec  = (mcu_sync_time[6]-'0') * 10 + (mcu_sync_time[7]-'0');
+                sec--;
+                if(sec < 0) { sec = 59; min--; }
+                if(min < 0) { min = 59; hour--; }
+                if(hour < 0) { hour = 23; }
+                mcu_sync_time[0] = (char)((hour/10)+'0');
+                mcu_sync_time[1] = (char)((hour%10)+'0');
+                mcu_sync_time[3] = (char)((min/10)+'0');
+                mcu_sync_time[4] = (char)((min%10)+'0');
+                mcu_sync_time[6] = (char)((sec/10)+'0');
+                mcu_sync_time[7] = (char)((sec%10)+'0');
+            }
+            mcu_time_sync_from_string(mcu_sync_time, true);
+        }
 
         pch = strtok(NULL, ","); // Latitude
         gps_latitude_double = gps_parse_coordinate(pch,gps_latitude,sizeof(gps_latitude));

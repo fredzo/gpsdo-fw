@@ -6,6 +6,7 @@
 #include "menu.h"
 #include "int.h"
 #include "tim.h"
+#include "mcu_time.h"
 #include <math.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -18,7 +19,6 @@
 
 void gpsdo(void)
 {
-    HAL_TIM_Base_Start_IT(&htim2);
 
     EE_Init(&ee_storage, sizeof(ee_storage_t));
     EE_Read();
@@ -102,6 +102,9 @@ void gpsdo(void)
         ee_storage.gps_time_offset = -MIN_TIME_OFFSET;
     }
     gps_time_offset = ee_storage.gps_time_offset+MIN_TIME_OFFSET;
+    // Initialize MCU timekeeping before enabling TIM2 ISR
+    mcu_time_init((int8_t)gps_time_offset);
+    HAL_TIM_Base_Start_IT(&htim2);
     if (ee_storage.gps_date_format == 0xff) {
         ee_storage.gps_date_format = DATE_FORMAT_UTC;
     }

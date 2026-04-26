@@ -3,6 +3,7 @@
 #include "frequency.h"
 #include "tim.h"
 #include "menu.h"
+#include "mcu_time.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -73,6 +74,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
         pps_led_toogle = !pps_led_toogle;
         // Update uptime
         device_uptime++;
+        // Increment MCU time-of-day (drives display during flywheel)
+        mcu_time_increment();
 
         if(HAL_GetTick() - last_pps > 1500)
         {   // No GPS PPS output, blink 'x' icon

@@ -12,6 +12,7 @@
 #include "stm32f1xx_hal_gpio.h"
 #include "int.h"
 #include "menu.h"
+#include "mcu_time.h"
 
 /// All times in ms
 #define DEBOUNCE_TIME           50
@@ -418,7 +419,7 @@ static void menu_draw()
         LCD_Puts(1, 0, screen_buffer);
         if(current_menu_screen == SCREEN_MAIN)
         {
-            LCD_Puts(0, 1, gps_time);
+            LCD_Puts(0, 1, (const char*)mcu_time_string);
         }
         else if(current_menu_screen == SCREEN_DATE)
         {
@@ -430,7 +431,7 @@ static void menu_draw()
             uint32_t duration = now - last_hour_date_screen_update;
             if(duration <= DATE_TIME_DURATION)
             {
-                LCD_Puts(0, 1, gps_time);
+                LCD_Puts(0, 1, (const char*)mcu_time_string);
             }
             else
             {
@@ -638,7 +639,7 @@ static void menu_draw()
         {
             snprintf(screen_buffer, SCREEN_BUFFER_SIZE, "GPS:%02d\5", num_sats);
             LCD_Puts(1, 0, screen_buffer);
-            LCD_Puts(0, 1, gps_time);
+            LCD_Puts(0, 1, (const char*)mcu_time_string);
         }
         else
         {
@@ -649,7 +650,7 @@ static void menu_draw()
                 default:
                 case SCREEN_GPS_TIME:
                     LCD_Puts(1, 0, "Time:");
-                    LCD_Puts(0, 1, gps_time);
+                    LCD_Puts(0, 1, (const char*)mcu_time_string);
                     break;
                 case SCREEN_GPS_LATITUDE:
                     snprintf(screen_buffer, SCREEN_BUFFER_SIZE, "Lat.: %s", gps_n_s);
